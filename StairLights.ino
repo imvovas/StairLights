@@ -3,7 +3,7 @@
  * Программно-аппаратный модуль StairLights
  * (с) Vladimir Shvedchenko 
  * 
- * Version 2020.08.26.001
+ * Version 2020.08.27.002
  * 
  */
 
@@ -75,7 +75,7 @@ const bool debug = false; // переменная, активирующая вы
   int luminositySensorPin = A2; // аналоговый вход, куда подключен фоторезистор
   int lightChangingSpeedPin = A3; // аналоговый вход, куда подключен потенциометр для управления скоростью работы эффектов
 
-  const int lightDelay = 1000; // длительность включения LED для продуктовой платы (30 сек)
+  const int lightDelay = 30000; // длительность включения LED для продуктовой платы (30 сек)
 #endif
 
 
@@ -139,9 +139,9 @@ void loop() {
 
 // чтение сенсоров
 void doSensorsRead() {
-  lightMinLuminosity = map(analogRead(lightMinLuminosityLevelPin), 0, 1023, 0, 255); // читаем значение минимального уровня освещения
-  lightMaxBrightness = map(analogRead(lightMaxBrightnessLevelPin), 0, 1023, 0, 255); // читаем значение максимальной допустимой яркости LED-ленты
+  lightMinLuminosity = map(analogRead(lightMinLuminosityLevelPin), 0, 1023, 0, 150); // читаем значение минимального уровня освещения
   luminositySensorValue = map(analogRead(luminositySensorPin), 0, 1023, 0, 255); // читаем значение уровня освещенности сенсора
+  lightMaxBrightness = map(analogRead(lightMaxBrightnessLevelPin), 0, 1023, 0, 250); // читаем значение максимальной допустимой яркости LED-ленты
   lightChangingSpeed = map(analogRead(lightChangingSpeedPin), 0, 1023, 0, 255); // читаем значение для скорости отработки эффектов
 
   lightOnDelay = lightChangingSpeed;
@@ -155,13 +155,13 @@ void doSensorsRead() {
 
 // управление логикой работы LED
 void doSomeLogic() {
-  if (((valueTopSensorPin == HIGH)&&(luminositySensorValue>lightMinLuminosity))||((valueTopSensorPin == HIGH)&&(luminositySensorLock == true))) { // если пришло событие от сенсора верхней части лестницы и уровень освещенности упал ниже luminosityLowValue
+  if (((valueTopSensorPin == HIGH)&&(luminositySensorValue<lightMinLuminosity))||((valueTopSensorPin == HIGH)&&(luminositySensorLock == true))) { // если пришло событие от сенсора верхней части лестницы и уровень освещенности упал ниже luminosityLowValue
     switchOnTopLEDs(); // включаем LED в направлении сверху вниз
     cycleTopDone=false; // устанавливаем признак срабатывания от сенсора верхней части лестницы
     chronoTop.restart(); // перезапускаем таймер для событий верхней части лестницы
   }
 
-  if (((valueBottomSensorPin == HIGH)&&(luminositySensorValue>lightMinLuminosity))||((valueBottomSensorPin == HIGH)&&(luminositySensorLock == true))) { // если пришло событие от сенсора нижней части лестницы и уровень освещенности упал ниже luminosityLowValue
+  if (((valueBottomSensorPin == HIGH)&&(luminositySensorValue<lightMinLuminosity))||((valueBottomSensorPin == HIGH)&&(luminositySensorLock == true))) { // если пришло событие от сенсора нижней части лестницы и уровень освещенности упал ниже luminosityLowValue
     switchOnBottomLEDs(); // включаем LED в направлении снизу вверх
     cycleBottomDone=false; // устанавливаем признак срабатывания от сенсора нижней части лестницы
     chronoBottom.restart(); // перезапускаем таймер для событий нижней части лестницы
@@ -182,17 +182,19 @@ void doSomeLogic() {
   if (debug) {
     Serial.print("lightMinLuminosity: ");
     Serial.println(lightMinLuminosity);
+    Serial.print("luminositySensorValue: ");
+    Serial.println(luminositySensorValue);
+    Serial.println();
     Serial.print("lightMaxBrightness: ");
     Serial.println(lightMaxBrightness);
     Serial.print("lightChangingSpeed: ");
     Serial.println(lightChangingSpeed);
-    Serial.print("luminositySensorValue: ");
-    Serial.println(luminositySensorValue);
+    Serial.println();
     Serial.print("valueTopSensorPin: ");
     Serial.println(valueTopSensorPin);
     Serial.print("valueBottomSensorPin: ");
     Serial.println(valueBottomSensorPin);
-    Serial.println("=====================");
+    Serial.println("==============================");
 
     delay(1000);
   }
