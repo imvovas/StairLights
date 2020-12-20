@@ -152,7 +152,6 @@ void doSensorsRead() {
 }
 
 
-
 // управление логикой работы LED
 void doSomeLogic() {
   if (((valueTopSensorPin == HIGH)&&(luminositySensorValue<lightMinLuminosity))||((valueTopSensorPin == HIGH)&&(luminositySensorLock == true))) { // если пришло событие от сенсора верхней части лестницы и уровень освещенности упал ниже luminosityLowValue
